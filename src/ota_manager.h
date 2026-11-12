@@ -25,7 +25,7 @@
 // ---------------------------------------------------------------------------
 // Wireless firmware updates, two ways:
 //   1. ArduinoOTA on port 3232 -- `pio run -t upload --upload-port
-//      vitruvian-companion.local` from the workstation.
+//      vitruvian-deck.local` from the workstation.
 //   2. An HTTP `/update` form on port 80 -- drag a .bin onto the page from any
 //      browser on the LAN, no toolchain required.
 //

@@ -1,6 +1,6 @@
-# mac-controller Firmware Flashing & Host Setup Guide
+# Vitruvian Deck Firmware Flashing & Host Setup Guide
 
-This guide provides step-by-step instructions for building and flashing the ESP32-S3 firmware using Bazel, PlatformIO, or esptool, setting up the macOS companion daemon, and troubleshooting common issues.
+This guide provides step-by-step instructions for building and flashing the Vitruvian Deck firmware using Bazel, PlatformIO, or esptool, setting up the macOS helper daemon, and troubleshooting common issues.
 
 ---
 
@@ -24,25 +24,25 @@ The monorepo provides hermetic Bazel wrappers for building and flashing.
 
 ### Step 1: Build Firmware Artifacts
 ```bash
-bazel build //apps/embedded/esp32-s3:firmware
+bazel build //apps/embedded/vitruvian-deck:firmware
 ```
-Outputs are compiled in `bazel-bin/apps/embedded/esp32-s3/`:
+Outputs are compiled in `bazel-bin/apps/embedded/vitruvian-deck/`:
 - `firmware.bin` (Application binary)
 - `bootloader.bin` (ESP32-S3 second-stage bootloader)
 - `partitions.bin` (Partition layout)
-- `esp32-s3-mac-controller.zip` (Self-contained release zip)
+- `vitruvian-deck.zip` (Self-contained release zip)
 
-### Step 2: Flash to Connected ESP32-S3
+### Step 2: Flash to a Connected Vitruvian Deck
 Plug your board into a USB-C port on your Mac, then run:
 ```bash
-bazel run //apps/embedded/esp32-s3:flash
+bazel run //apps/embedded/vitruvian-deck:flash
 ```
 Bazel will auto-detect the serial port matching `/dev/cu.usbmodem*` and flash the binaries at 460,800 baud.
 
 ### Step 3: Flash with Explicit Serial Port
 If multiple USB serial devices are connected:
 ```bash
-bazel run //apps/embedded/esp32-s3:flash -- /dev/cu.usbmodem1101
+bazel run //apps/embedded/vitruvian-deck:flash -- /dev/cu.usbmodem1101
 ```
 
 ---
@@ -53,13 +53,13 @@ If developing outside of Bazel or using the PlatformIO IDE / CLI:
 
 ```bash
 # Compile firmware
-pio run -d apps/embedded/esp32-s3
+pio run -d apps/embedded/vitruvian-deck
 
 # Upload firmware over USB
-pio run -d apps/embedded/esp32-s3 -t upload
+pio run -d apps/embedded/vitruvian-deck -t upload
 
 # Open serial debug monitor
-pio device monitor -d apps/embedded/esp32-s3 -b 115200
+pio device monitor -d apps/embedded/vitruvian-deck -b 115200
 ```
 
 ---
@@ -71,14 +71,14 @@ are gated on the device's OTA password — by default `vitruvian-<last 3 octets 
 the Wi-Fi MAC>`, which the Settings deck prints alongside the MAC.
 
 ### Browser upload (no toolchain):
-Open `http://vitruvian-companion.local/update` (user `vitruvian`, password as
+Open `http://vitruvian-deck.local/update` (user `vitruvian`, password as
 above) and upload `firmware.bin`. The page shows live upload progress and the
 device reboots into the new image on completion.
 
 ### PlatformIO / espota:
 ```bash
-pio run -d apps/embedded/esp32-s3 -t upload \
-  --upload-port vitruvian-companion.local \
+pio run -d apps/embedded/vitruvian-deck -t upload \
+  --upload-port vitruvian-deck.local \
   --upload-flags "--auth=vitruvian-A1B2C3"
 ```
 
@@ -98,12 +98,12 @@ For flashing distributed binary release zips without compiling from source:
 
 ```bash
 # Extract distribution zip
-unzip esp32-s3-mac-controller.zip -d mac-ctrl-release
+unzip vitruvian-deck.zip -d mac-ctrl-release
 cd mac-ctrl-release
 
 # Build the std-only flasher beside the images, then run it
-rustc --edition 2021 -O flash/main.rs -o flash-esp32-s3
-./flash-esp32-s3 /dev/cu.usbmodemXXXX
+rustc --edition 2021 -O flash/main.rs -o flash-vitruvian-deck
+./flash-vitruvian-deck /dev/cu.usbmodemXXXX
 ```
 
 ### Manual `esptool` Command:
@@ -116,25 +116,25 @@ esptool.py -p /dev/cu.usbmodemXXXX -b 460800 --before default_reset --after hard
 
 ---
 
-## 5. Running the macOS Companion Daemon
+## 5. Running the macOS Helper Daemon
 
 ### Interactive Execution:
 ```bash
-bazel run //apps/embedded/esp32-s3:mac_stats_daemon
+bazel run //apps/embedded/vitruvian-deck:mac_stats_daemon
 ```
 
 ### Expected Startup Output:
 ```
-ESP32-S3 Mac Desktop Companion Daemon starting...
-Connected to ESP32-S3 over USB CDC /dev/cu.usbmodem1101
+Vitruvian Deck Mac Helper starting...
+Connected to Vitruvian Deck over USB CDC /dev/cu.usbmodem1101
 [APP] Focus -> VS Code (com.microsoft.VSCode) via usb
 [INIT] Primed USB CDC /dev/cu.usbmodem1101: app=VS Code, agent=idle, ci=passing
 ```
 
 Unplug the cable and the same daemon finds the device on the LAN instead:
 ```
-Waiting for the ESP32-S3 on USB (/dev/cu.usbmodem*) or vitruvian-companion.local...
-Connected to ESP32-S3 over Wi-Fi UDP 192.168.1.42:8266
+Waiting for the Vitruvian Deck on USB (/dev/cu.usbmodem*) or vitruvian-deck.local...
+Connected to Vitruvian Deck over Wi-Fi UDP 192.168.1.42:8266
 [INIT] Primed Wi-Fi UDP 192.168.1.42:8266: app=VS Code, agent=idle, ci=passing
 ```
 
@@ -151,32 +151,32 @@ Connected to ESP32-S3 over Wi-Fi UDP 192.168.1.42:8266
 ### Automatic Background Startup (macOS launchd):
 To run the daemon automatically in the background whenever you log into macOS, create a user LaunchAgent:
 
-1. Create `~/Library/LaunchAgents/com.vitruvian.mac-controller.plist`:
+1. Create `~/Library/LaunchAgents/com.vitruviansoftware.deck.plist`:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.vitruvian.mac-controller</string>
+    <string>com.vitruviansoftware.deck</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/YOUR_USERNAME/Workspace/gh/application/vitruvian/vitruvian-core/bazel-bin/apps/embedded/esp32-s3/mac_stats_daemon</string>
+        <string>/Users/YOUR_USERNAME/Workspace/gh/application/vitruvian/vitruvian-core/bazel-bin/apps/embedded/vitruvian-deck/mac_stats_daemon</string>
     </array>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>/tmp/mac_controller.log</string>
+    <string>/tmp/vitruvian_deck.log</string>
     <key>StandardErrorPath</key>
-    <string>/tmp/mac_controller.err</string>
+    <string>/tmp/vitruvian_deck.err</string>
 </dict>
 </plist>
 ```
 2. Load and start the service:
 ```bash
-launchctl load ~/Library/LaunchAgents/com.vitruvian.mac-controller.plist
+launchctl load ~/Library/LaunchAgents/com.vitruviansoftware.deck.plist
 ```
 
 ---
@@ -184,7 +184,7 @@ launchctl load ~/Library/LaunchAgents/com.vitruvian.mac-controller.plist
 ## 6. Troubleshooting & Recovery
 
 ### Issue 1: Serial Port Not Detected (`/dev/cu.usbmodem*` missing)
-- **Cause**: Cable is power-only, or the ESP32-S3 is in a sleep or unconfigured USB state.
+- **Cause**: Cable is power-only, or the Vitruvian Deck is in a sleep or unconfigured USB state.
 - **Solution**:
   1. Replace cable with a high-speed data-rated USB-C cable.
   2. Put the board into **ROM Bootloader Mode**:
@@ -206,7 +206,7 @@ launchctl load ~/Library/LaunchAgents/com.vitruvian.mac-controller.plist
 - **Solution**: Perform a complete flash erase:
   ```bash
   uvx esptool -p /dev/cu.usbmodemXXXX erase_flash
-  bazel run //apps/embedded/esp32-s3:flash
+  bazel run //apps/embedded/vitruvian-deck:flash
   ```
 
 ### Issue 4: Frontmost Application Detection Not Triggering

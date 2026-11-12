@@ -1,7 +1,7 @@
 # Src
 
 ## Overview
-Component package providing implementation for `apps/embedded/esp32-s3/tests/src`.
+Component package providing implementation for `apps/embedded/vitruvian-deck/tests/src`.
 
 ## Interface
 - `[lib.rs:component_dir]`
@@ -21,4 +21,4 @@ Component package providing implementation for `apps/embedded/esp32-s3/tests/src
 - None
 
 ## Verification
-- Run: `bazel test //apps/embedded/esp32-s3/tests/src/...`
+- Run: `bazel test //apps/embedded/vitruvian-deck/tests/src/...`

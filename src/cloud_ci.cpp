@@ -199,7 +199,7 @@ static void do_poll() {
              GITHUB_HOST, cfg_repo);
 
     HTTPClient http;
-    http.setUserAgent("Vitruvian-ESP32-S3");
+    http.setUserAgent("Vitruvian-Deck");
     http.setConnectTimeout(10000);
     http.setTimeout(12000);
     http.setReuse(false);

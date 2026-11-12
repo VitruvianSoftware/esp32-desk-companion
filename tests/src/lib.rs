@@ -37,11 +37,14 @@ pub mod test_settings_toggles;
 pub mod test_stress_firmware;
 pub mod test_wifi_provisioning;
 
-/// Resolves the `apps/embedded/esp32-s3` component directory hermetically inside
+/// Resolves the `apps/embedded/vitruvian-deck` component directory hermetically inside
 /// Bazel test sandboxes (`TEST_SRCDIR`), `bazel run` (`BUILD_WORKSPACE_DIRECTORY`),
 /// or direct execution from the repository/package root.
 pub fn component_dir() -> PathBuf {
-    let candidates = [PathBuf::from("apps/embedded/esp32-s3"), PathBuf::from(".")];
+    let candidates = [
+        PathBuf::from("apps/embedded/vitruvian-deck"),
+        PathBuf::from("."),
+    ];
     for c in &candidates {
         if c.join("platformio.ini").is_file() && c.join("src").is_dir() {
             return c.clone();
@@ -51,18 +54,18 @@ pub fn component_dir() -> PathBuf {
         let workspace = env::var("TEST_WORKSPACE").unwrap_or_else(|_| "_main".to_string());
         let p = Path::new(&srcdir)
             .join(&workspace)
-            .join("apps/embedded/esp32-s3");
+            .join("apps/embedded/vitruvian-deck");
         if p.join("platformio.ini").is_file() {
             return p;
         }
     }
     if let Ok(ws) = env::var("BUILD_WORKSPACE_DIRECTORY") {
-        let p = Path::new(&ws).join("apps/embedded/esp32-s3");
+        let p = Path::new(&ws).join("apps/embedded/vitruvian-deck");
         if p.join("platformio.ini").is_file() {
             return p;
         }
     }
-    PathBuf::from("apps/embedded/esp32-s3")
+    PathBuf::from("apps/embedded/vitruvian-deck")
 }
 
 /// Resolves the repository root directory (following Bazel runfile symlinks when possible).
@@ -75,7 +78,7 @@ pub fn repo_root() -> PathBuf {
     }
     let comp = component_dir();
     if let Ok(canon) = fs::canonicalize(comp.join("platformio.ini")) {
-        // <repo>/apps/embedded/esp32-s3/platformio.ini -> 4 parents up is <repo>
+        // <repo>/apps/embedded/vitruvian-deck/platformio.ini -> 4 parents up is <repo>
         if let Some(root) = canon
             .parent()
             .and_then(|p| p.parent())
@@ -91,7 +94,7 @@ pub fn repo_root() -> PathBuf {
     PathBuf::from(".")
 }
 
-/// Reads a file inside `apps/embedded/esp32-s3/<rel_path>` verbatim.
+/// Reads a file inside `apps/embedded/vitruvian-deck/<rel_path>` verbatim.
 pub fn read_component_file(rel_path: &str) -> String {
     let path = component_dir().join(rel_path);
     fs::read_to_string(&path).unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e))

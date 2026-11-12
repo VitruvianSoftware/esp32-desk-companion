@@ -53,7 +53,7 @@ pub struct ParsedCatalog {
     pub links: Vec<CatalogLink>,
 }
 
-/// Parses `apps/embedded/esp32-s3/catalog-info.yaml` without external YAML dependencies.
+/// Parses `apps/embedded/vitruvian-deck/catalog-info.yaml` without external YAML dependencies.
 pub fn parse_component_catalog(raw: &str) -> ParsedCatalog {
     let mut cat = ParsedCatalog::default();
     let mut section = "";
@@ -182,7 +182,7 @@ pub fn run_suite() -> usize {
     let cat = parse_component_catalog(&raw);
     assert_eq!(cat.api_version, "backstage.io/v1alpha1");
     assert_eq!(cat.kind, "Component");
-    assert!(cat.name == "esp32-s3" || cat.name == "mac-controller");
+    assert_eq!(cat.name, "vitruvian-deck");
     assert!(!cat.title.trim().is_empty());
     assert!(cat.description.trim().len() >= 20);
     assert!(cat.tags.len() >= 3);
@@ -190,7 +190,7 @@ pub fn run_suite() -> usize {
         assert!(is_valid_tag(t), "invalid tag: {}", t);
     }
     let tag_set: HashSet<&str> = cat.tags.iter().map(|s| s.as_str()).collect();
-    for req in ["esp32-s3", "embedded", "macos"] {
+    for req in ["vitruvian-deck", "esp32-s3", "embedded", "macos"] {
         assert!(tag_set.contains(req), "missing expected tag {}", req);
     }
     assert_eq!(cat.project_slug, "VitruvianSoftware/vitruvian-core");
@@ -212,9 +212,9 @@ pub fn run_suite() -> usize {
     assert!(cat.links.len() >= 5);
     let mut checked_links = 0usize;
     let blob_prefix =
-        "https://github.com/VitruvianSoftware/vitruvian-core/blob/main/apps/embedded/esp32-s3/";
+        "https://github.com/VitruvianSoftware/vitruvian-core/blob/main/apps/embedded/vitruvian-deck/";
     let tree_prefix =
-        "https://github.com/VitruvianSoftware/vitruvian-core/tree/main/apps/embedded/esp32-s3";
+        "https://github.com/VitruvianSoftware/vitruvian-core/tree/main/apps/embedded/vitruvian-deck";
     for link in &cat.links {
         assert!(!link.url.is_empty());
         assert!(!link.title.is_empty());
@@ -260,11 +260,7 @@ pub fn run_suite() -> usize {
     let root = repo_root();
     let root_catalog = root.join("catalog-info.yaml");
     if let Ok(root_raw) = fs::read_to_string(&root_catalog) {
-        assert!(
-            root_raw.contains("./apps/embedded/esp32-s3/catalog-info.yaml")
-                || root_raw.contains("./iot/esp32-s3/catalog-info.yaml")
-                || root_raw.contains("./mac-controller/catalog-info.yaml")
-        );
+        assert!(root_raw.contains("./apps/embedded/vitruvian-deck/catalog-info.yaml"));
         checks += 1;
     }
 
@@ -277,12 +273,7 @@ pub fn run_suite() -> usize {
                 continue;
             }
             let parts: Vec<&str> = trimmed.split_whitespace().collect();
-            if parts.len() >= 2
-                && matches!(
-                    parts[0],
-                    "/apps/embedded/esp32-s3/" | "/iot/esp32-s3/" | "/iot/" | "/mac-controller/"
-                )
-            {
+            if parts.len() >= 2 && matches!(parts[0], "/apps/embedded/vitruvian-deck/") {
                 assert!(parts[1..].contains(&"@VitruvianSoftware/platform-team"));
                 matched_team = parts[1].rsplit('/').next().map(|s| s.to_string());
                 break;
@@ -317,7 +308,7 @@ mod tests {
 
         assert_eq!(cat.api_version, "backstage.io/v1alpha1");
         assert_eq!(cat.kind, "Component");
-        assert!(matches!(cat.name.as_str(), "esp32-s3" | "mac-controller"));
+        assert_eq!(cat.name, "vitruvian-deck");
         assert!(!cat.title.trim().is_empty());
         assert!(cat.description.trim().len() >= 20);
         assert!(cat.tags.len() >= 3);
@@ -350,11 +341,7 @@ mod tests {
         let root_catalog = repo_root().join("catalog-info.yaml");
         if let Ok(root_raw) = fs::read_to_string(&root_catalog) {
             assert!(root_raw.contains("name: vitruvian-core-apps"));
-            assert!(
-                root_raw.contains("./apps/embedded/esp32-s3/catalog-info.yaml")
-                    || root_raw.contains("./iot/esp32-s3/catalog-info.yaml")
-                    || root_raw.contains("./mac-controller/catalog-info.yaml")
-            );
+            assert!(root_raw.contains("./apps/embedded/vitruvian-deck/catalog-info.yaml"));
         }
     }
 
@@ -366,9 +353,9 @@ mod tests {
 
         assert!(cat.links.len() >= 5);
         let blob_prefix =
-            "https://github.com/VitruvianSoftware/vitruvian-core/blob/main/apps/embedded/esp32-s3/";
+            "https://github.com/VitruvianSoftware/vitruvian-core/blob/main/apps/embedded/vitruvian-deck/";
         let tree_prefix =
-            "https://github.com/VitruvianSoftware/vitruvian-core/tree/main/apps/embedded/esp32-s3";
+            "https://github.com/VitruvianSoftware/vitruvian-core/tree/main/apps/embedded/vitruvian-deck";
         let mut checked = 0usize;
         for link in &cat.links {
             assert!(!link.url.is_empty());
@@ -407,7 +394,7 @@ mod tests {
             let mut found = false;
             for line in co_raw.lines() {
                 let parts: Vec<&str> = line.trim().split_whitespace().collect();
-                if parts.len() >= 2 && parts[0] == "/apps/embedded/esp32-s3/" {
+                if parts.len() >= 2 && parts[0] == "/apps/embedded/vitruvian-deck/" {
                     found = true;
                     assert!(parts[1..].contains(&"@VitruvianSoftware/platform-team"));
                     let coteam = parts[1].rsplit('/').next().unwrap();

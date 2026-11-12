@@ -1,7 +1,7 @@
 # App Profiles
 
 ## Overview
-Component package providing implementation for `apps/embedded/esp32-s3/host_companion/src/app_profiles`.
+Component package providing implementation for `apps/embedded/vitruvian-deck/host_tools/src/app_profiles`.
 
 ## Interface
 - `[lib.rs:MOD_NONE]`
@@ -32,4 +32,4 @@ Component package providing implementation for `apps/embedded/esp32-s3/host_comp
 - [lib.rs:185]: `"net.kovidgoyal.kitty",`
 
 ## Verification
-- Run: `bazel test //apps/embedded/esp32-s3/host_companion/src/app_profiles/...`
+- Run: `bazel test //apps/embedded/vitruvian-deck/host_tools/src/app_profiles/...`

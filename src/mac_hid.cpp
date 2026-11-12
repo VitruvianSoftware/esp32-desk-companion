@@ -36,6 +36,8 @@ static USBHIDConsumerControl ConsumerControl;
 #define HID_KEY_DWELL_MS 20
 
 void mac_hid_init() {
+    USB.productName("Vitruvian Deck");
+    USB.manufacturerName("VitruvianSoftware");
     Keyboard.begin();
     ConsumerControl.begin();
     USB.begin();
@@ -68,7 +70,7 @@ void mac_hid_execute_action(uint8_t mod, uint8_t key, uint16_t cons) {
 
         // 2b. Wi-Fi Fallback: If USB is detached (or host is streaming over Wi-Fi)
         //     and Bluetooth is not connected, beam the action packet over Wi-Fi UDP
-        //     to the Mac companion daemon.
+        //     to the Mac helper daemon.
         char line[96];
         snprintf(line, sizeof(line), "{\"cmd\":\"hid_action\",\"mod\":%u,\"key\":%u,\"cons\":%u}",
                  (unsigned int)mod, (unsigned int)key, (unsigned int)cons);

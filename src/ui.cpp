@@ -252,7 +252,7 @@ static void connectivity_btn_action_cb(lv_event_t * e) {
 
     switch (action_id) {
         case ACTION_WIFI_SYNC:
-            // Least-friction default: ask the tethered Mac companion to beam
+            // Least-friction default: ask the tethered Mac helper to beam
             // its current network credentials over USB CDC.
             wifi_sync_pending_until_ms = millis() + 10000;
             if (!wifi_manager_is_enabled()) {
@@ -1563,7 +1563,7 @@ void ui_init() {
     lv_obj_set_width(label_wifi_status, 206);
     lv_label_set_long_mode(label_wifi_status, LV_LABEL_LONG_DOT);
 
-    // Multiple options, least friction first: companion sync is the primary
+    // Multiple options, least friction first: helper sync is the primary
     // (default) path, the standalone web portal is the fallback.
     create_conn_button(card_wifi, "Sync from\nMac", 0x0A84FF, 2, 40, 102, 44, ACTION_WIFI_SYNC);
     create_conn_button(card_wifi, "Web\nPortal", 0x5E5CE6, 110, 40, 102, 44, ACTION_WIFI_PORTAL);

@@ -1,7 +1,7 @@
 # Publish
 
 ## Overview
-Component package providing implementation for `apps/embedded/esp32-s3/host_companion/src/publish`.
+Component package providing implementation for `apps/embedded/vitruvian-deck/host_tools/src/publish`.
 
 ## Interface
 - `[lib.rs:TAG_PREFIX]`
@@ -26,4 +26,4 @@ Component package providing implementation for `apps/embedded/esp32-s3/host_comp
 - None
 
 ## Verification
-- Run: `bazel test //apps/embedded/esp32-s3/host_companion/src/publish/...`
+- Run: `bazel test //apps/embedded/vitruvian-deck/host_tools/src/publish/...`

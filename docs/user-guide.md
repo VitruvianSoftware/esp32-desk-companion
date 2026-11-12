@@ -1,6 +1,6 @@
-# ESP32-S3 Mac Desktop Companion — User Guide & Operator Manual
+# Vitruvian Deck — User Guide & Operator Manual
 
-The **ESP32-S3 Mac Desktop Companion** (Waveshare ESP32-S3-Touch-LCD-1.69) is a standalone, battery-capable touch controller and desk companion designed for macOS. It provides real-time system and AI agent monitoring, contextual application shortcuts, and desktop control via USB, Bluetooth, or Wi-Fi.
+The **Vitruvian Deck** (Waveshare ESP32-S3-Touch-LCD-1.69) is a standalone, battery-capable touch controller and desk display designed for macOS. It provides real-time system and AI agent monitoring, contextual application shortcuts, and desktop control via USB, Bluetooth, or Wi-Fi.
 
 ---
 
@@ -63,14 +63,14 @@ flowchart TD
 ### Tethered Mode (Plugged into USB)
 - When plugged into your Mac via USB-C, the ESP32 acts as a composite USB device:
   1. **USB HID Keyboard & Consumer Control**: System buttons send keystrokes directly over the physical USB wires into macOS. Works out of the box with zero host software.
-  2. **USB CDC Serial**: Used by the companion daemon to stream host statistics.
+  2. **USB CDC Serial**: Used by the helper daemon to stream host statistics.
 - Header link status displays: `● USB` (green).
 
 ### Untethered Mode (Running on Battery)
 - When the USB cable is unplugged, physical USB electrical signals cannot travel to the Mac.
-- **To control your Mac on battery, you must use either Bluetooth or the Wi-Fi companion daemon**:
+- **To control your Mac on battery, you must use either Bluetooth or the Wi-Fi helper daemon**:
   1. **Option A: Bluetooth BLE (Standalone, Recommended)**: The ESP32 acts as a wireless Bluetooth keyboard. Once paired, buttons work directly without running any script on the Mac.
-  2. **Option B: Wi-Fi Companion Daemon**: The ESP32 beams commands over Wi-Fi UDP to `mac_stats_daemon` on your Mac.
+  2. **Option B: Wi-Fi Helper Daemon**: The ESP32 beams commands over Wi-Fi UDP to `mac_stats_daemon` on your Mac.
 
 ---
 
@@ -81,23 +81,23 @@ flowchart TD
 2. Scroll down to the **Bluetooth** card.
 3. Tap **[Pair with Mac]**. The device activates Bluetooth LE advertising for 60 seconds.
 4. On your Mac, open **System Settings -> Bluetooth**.
-5. Look under **Nearby Devices** for **"Vitruvian Companion"** and click **Connect**.
+5. Look under **Nearby Devices** for **"Vitruvian Deck"** and click **Connect**.
 6. Once connected, macOS recognizes the device as an external Bluetooth keyboard. System shortcuts (Mute, Sleep, Mission Control, Desktops) will now control your Mac wirelessly.
 
-### Setting up Wi-Fi & The Host Companion Daemon
-The Wi-Fi companion daemon provides bidirectional communication: it executes untethered shortcuts and continuously streams Mac CPU/RAM metrics and active application profiles to the device.
+### Setting up Wi-Fi & The Host Helper Daemon
+The Wi-Fi helper daemon provides bidirectional communication: it executes untethered shortcuts and continuously streams Mac CPU/RAM metrics and active application profiles to the device.
 
 1. **Connect the ESP32 to Wi-Fi**:
    - *Quick Sync (Tethered)*: Plug the device into your Mac via USB, swipe to **Settings Deck**, and tap **[Sync from Mac]**. The host daemon will automatically beam your Mac's Wi-Fi network and credentials to the device.
    - *Web Portal*: In Settings Deck, tap **[Setup Network]**. Connect your phone/Mac to the temporary Wi-Fi access point `Vitruvian-Setup-XXXX` and open `http://192.168.4.1` to enter your SSID and password.
-2. **Start the Mac Companion Daemon**:
+2. **Start the Mac Helper Daemon**:
    In a terminal on your Mac, run:
    ```bash
-   bazel run //apps/embedded/esp32-s3:mac_stats_daemon
+   bazel run //apps/embedded/vitruvian-deck:mac_stats_daemon
    ```
    *Note: If mDNS is disabled or blocked on your local network, specify the device's IP address directly (shown in the Settings Deck):*
    ```bash
-   bazel run //apps/embedded/esp32-s3:mac_stats_daemon -- --wifi-host 192.168.86.65
+   bazel run //apps/embedded/vitruvian-deck:mac_stats_daemon -- --wifi-host 192.168.86.65
    ```
 3. Once running, the device's header will display the Wi-Fi icon with your local IP address (`● 192.168.x.x`), and CPU/RAM bars will begin updating in real time.
 
@@ -130,7 +130,7 @@ The interface is structured as a swipeable carousel of 4 Decks. Swipe left or ri
   - Shows the status of local AI coding agents (Antigravity, Claude Code): `Idle`, `Running`, `Review Required`, or `Error`.
 - **CI / GitHub Pipeline Monitoring**:
   - Displays current repository branch, open PR number, and check status (`Passing`, `In-Progress`, `Failing`).
-  - Tapping **[Run Checks]** triggers repository checks via the companion daemon.
+  - Tapping **[Run Checks]** triggers repository checks via the helper daemon.
   - Tapping **[Open PR]** opens the active PR in your Mac browser.
 - **Autonomous Cloud Monitor**:
   - When untethered without a Mac daemon running, the device directly polls the GitHub API over Wi-Fi, showing a `CLOUD` badge.
@@ -184,8 +184,8 @@ When rotated into landscape, the UI automatically reflows:
 
 ### Why don't the system buttons control my Mac when running on battery?
 When unplugged, physical USB keystrokes cannot travel across the air. You must connect the device to your Mac using either:
-1. **Bluetooth**: In Settings Deck, tap **[Pair with Mac]**, then connect to **"Vitruvian Companion"** in macOS Bluetooth settings.
-2. **Wi-Fi Companion**: Run `bazel run //apps/embedded/esp32-s3:mac_stats_daemon` in your Mac terminal.
+1. **Bluetooth**: In Settings Deck, tap **[Pair with Mac]**, then connect to **"Vitruvian Deck"** in macOS Bluetooth settings.
+2. **Wi-Fi Helper**: Run `bazel run //apps/embedded/vitruvian-deck:mac_stats_daemon` in your Mac terminal.
 
 ### The device turns off as soon as I release the power button from cold boot.
 Ensure you hold the power button for approximately **1 second** when turning it on. The firmware requires ~200ms to boot the bootloader and assert the `SYS_EN` hardware power latch on GPIO 41. Releasing too quickly before the latch engages drops power.

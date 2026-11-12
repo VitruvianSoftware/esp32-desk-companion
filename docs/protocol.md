@@ -1,6 +1,6 @@
-# mac-controller Wire Protocol Specification
+# Vitruvian Deck Wire Protocol Specification
 
-This specification defines the bidirectional communication protocol between the macOS host companion daemon and the ESP32-S3 Mac Controller.
+This specification defines the bidirectional communication protocol between the macOS host helper daemon and the Vitruvian Deck.
 
 The protocol is **transport-agnostic**: every packet below is byte-identical over USB CDC and over the Wi-Fi UDP link, and `packet_router.cpp` decodes both with one dispatcher. Nothing in §2–§4 depends on which channel carried it.
 
@@ -24,10 +24,10 @@ Common to both channels:
 
 ### 1.2 Channel B — Wi-Fi UDP (untethered)
 
-- **Discovery**: mDNS. The firmware publishes `vitruvian-companion.local` and the service `_vitruvian._tcp` on port 8266, with TXT records `version`, `chip=esp32s3`, and `id` (the station MAC without separators).
+- **Discovery**: mDNS. The firmware publishes `vitruvian-deck.local` and the service `_vitruvian._tcp` on port 8266, with TXT records `version`, `chip=esp32s3`, and `id` (the station MAC without separators).
 - **Socket**: UDP, device port **8266**. The host binds an ephemeral local port and uses it for both directions; the device replies to the source address of the last packet it accepted.
 - **Datagram content**: one or more newline-framed JSON objects. A datagram larger than 1,024 bytes is truncated and counted as a drop.
-- **Source filtering**: the host discards datagrams from any address other than the companion's.
+- **Source filtering**: the host discards datagrams from any address other than the helper's.
 - **Reliability**: none, by design. The stream is 1 Hz telemetry that tolerates loss, and a connectionless socket means a sleeping or re-addressed Mac never leaves the firmware wedged in a half-open connection.
 
 ### 1.3 Channel arbitration
@@ -45,7 +45,7 @@ USB deliberately outranks Wi-Fi: it is the lower-latency, always-powered path. U
 
 ---
 
-## 2. Downstream Packets (Host → ESP32-S3)
+## 2. Downstream Packets (Host → Deck)
 
 ### 2.1 System Telemetry Packet (`type: "stats"`)
 Transmitted periodically at **1.0 Hz** by the host daemon. Resets the device link watchdog timer.
@@ -69,7 +69,7 @@ Transmitted periodically at **1.0 Hz** by the host daemon. Resets the device lin
 | `time` | string | Yes | Formatted local time string (e.g. `"12:30 PM"`). |
 
 #### Firmware Watchdog Behavior:
-If no valid packet is received by the ESP32-S3 within **4,000 ms**, the device enters link timeout mode:
+If no valid packet is received by the Deck within **4,000 ms**, the device enters link timeout mode:
 - Header status dot updates to orange (`● Standby`).
 - CPU and RAM bars animate to `0%`.
 - Reconnection restores green indicator (`● Linked`).
@@ -200,7 +200,7 @@ Transmitted every **5.0 seconds** or immediately upon any agent or CI state tran
 ---
 
 ### 2.4 Deck Visibility Configuration Packet (`type: "deck_config"`)
-Allows the macOS companion to remotely configure which decks are navigable in the swipe carousel.
+Allows the macOS helper to remotely configure which decks are navigable in the swipe carousel.
 
 #### JSON Schema:
 ```json
@@ -223,7 +223,7 @@ Allows the macOS companion to remotely configure which decks are navigable in th
 ---
 
 ### 2.5 Wi-Fi Provisioning Packet (`cmd: "wifi_set"`)
-The host companion's answer to a device-initiated `wifi_sync` request (Zero-Typing Companion Sync), or an explicit `--wifi-sync` terminal run. The firmware persists the credentials to NVS namespace `wifi_config`, enables the radio, starts a station connection, and immediately reports a `wifi_status` frame back.
+The host helper's answer to a device-initiated `wifi_sync` request (Zero-Typing Helper Sync), or an explicit `--wifi-sync` terminal run. The firmware persists the credentials to NVS namespace `wifi_config`, enables the radio, starts a station connection, and immediately reports a `wifi_status` frame back.
 
 #### JSON Schema:
 ```json
@@ -261,9 +261,9 @@ Configures the autonomous GitHub Actions poller (§4). Persisted to NVS namespac
 
 ---
 
-## 3. Upstream Action Commands (ESP32-S3 → Host)
+## 3. Upstream Action Commands (Deck → Host)
 
-When the user taps interactive buttons on the ESP32-S3 touch display, action packets are serialized and transmitted to macOS over USB CDC serial.
+When the user taps interactive buttons on the Deck touch display, action packets are serialized and transmitted to macOS over USB CDC serial.
 
 ### 3.1 Trigger CI Check Poll (`run_checks`)
 Sent when the user taps `Run Checks (gh pr)` on Deck 2:
@@ -311,12 +311,12 @@ Emitted on every radio state transition and every 5 seconds while either channel
 
 ---
 
-## 4. Autonomous Cloud Monitor (ESP32-S3 → GitHub)
+## 4. Autonomous Cloud Monitor (Deck → GitHub)
 
 When the device is on Wi-Fi and **neither** channel has carried a host packet for 15 s, `cloud_ci.cpp` takes over Deck 2 and polls GitHub directly. No host is involved, so this is not part of the host protocol above — it is documented here because it drives the same deck.
 
 - **Request**: `GET https://api.github.com/repos/{owner}/{repo}/actions/runs?per_page=1&exclude_pull_requests=true`
-- **Headers**: `User-Agent: Vitruvian-ESP32-S3`, `Accept: application/vnd.github+json`, `X-GitHub-Api-Version: 2022-11-28`, and `Authorization: Bearer <token>` when one is configured.
+- **Headers**: `User-Agent: Vitruvian-Deck`, `Accept: application/vnd.github+json`, `X-GitHub-Api-Version: 2022-11-28`, and `Authorization: Bearer <token>` when one is configured.
 - **Cadence**: every 60 s by default (clamped to 15–3600 s). A failing poll backs off geometrically to a 15-minute ceiling, never faster than the configured interval.
 - **Fields read**: `workflow_runs[0]`'s `name`, `status`, `conclusion`, `head_branch`, `head_sha` (first 7 chars), and `run_number`. Everything else is dropped by an ArduinoJson parse filter.
 - **TLS**: certificates are verified against the roots pinned in `src/github_ca.h`. The handshake and body read run on a dedicated FreeRTOS task pinned to core 0, so the LVGL loop on core 1 never blocks.
@@ -337,7 +337,7 @@ Settings that never cross the wire but shape device behaviour. All live in the N
 
 ---
 
-## 6. Diagnostic & Debug Messages (ESP32-S3 → Host)
+## 6. Diagnostic & Debug Messages (Deck → Host)
 
 For hardware validation, the firmware emits standard formatted text lines:
 - **Touch Event**: `TOUCH_EVENT: x=120, y=140`

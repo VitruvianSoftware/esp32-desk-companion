@@ -1,6 +1,6 @@
-# mac-controller Hardware & BOM Specification
+# Vitruvian Deck Hardware & BOM Specification
 
-This document provides the hardware bill of materials, complete pinout tables, display and touch controller specifications, power characteristics, and enclosure guidelines for the ESP32-S3 Mac Controller.
+This document provides the hardware bill of materials, complete pinout tables, display and touch controller specifications, power characteristics, and enclosure guidelines for the Vitruvian Deck.
 
 ---
 

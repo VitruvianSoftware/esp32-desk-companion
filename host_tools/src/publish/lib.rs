@@ -18,44 +18,44 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//! Rust port of `publish.sh`: build, stamp and publish the ESP32-S3 firmware bundle
+//! Rust port of `publish.sh`: build, stamp and publish the Vitruvian Deck firmware bundle
 //! to a GitHub Release.
 //!
-//! ONE tool, TWO triggers: the generated `delivery-esp32-s3.yaml` runs it for the
-//! `esp32-s3` unit, and the break-glass path is `bazel run //apps/embedded/esp32-s3:publish`.
+//! ONE tool, TWO triggers: the generated `delivery-vitruvian-deck.yaml` runs it for the
+//! `esp32-s3` unit, and the break-glass path is `bazel run //apps/embedded/vitruvian-deck:publish`.
 //! `GRADE` selects the rung:
 //!
-//!   GRADE=beta        (push to main)  rolling prerelease `esp32-s3-beta-latest`;
+//!   GRADE=beta        (push to main)  rolling prerelease `vitruvian-deck-beta-latest`;
 //!                     assets are overwritten and the tag is moved to HEAD.
 //!   GRADE=production  (release event) attach the assets to the release-please
-//!                     release named by `RELEASE_TAG` (esp32-s3-vX.Y.Z).
+//!                     release named by `RELEASE_TAG` (vitruvian-deck-vX.Y.Z).
 //!
 //! Stamping happens HERE and not in the Bazel genrule: a genrule's action sees
 //! neither the workflow's env nor `.git`. The genrule produces the three raw
 //! images; this tool wraps them with `build_info.json` and the Rust flash helper
-//! sources into `esp32-s3-mac-controller.zip`.
+//! sources into `vitruvian-deck.zip`.
 
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-pub const TAG_PREFIX: &str = "esp32-s3-v";
-pub const BETA_TAG: &str = "esp32-s3-beta-latest";
-pub const PKG: &str = "apps/embedded/esp32-s3";
+pub const TAG_PREFIX: &str = "vitruvian-deck-v";
+pub const BETA_TAG: &str = "vitruvian-deck-beta-latest";
+pub const PKG: &str = "apps/embedded/vitruvian-deck";
 
 /// The flash helper that ships inside the zip (std-only; `rustc` builds it).
 pub const FLASH_SOURCES: [(&str, &str); 2] = [
-    ("host_companion/src/flash/main.rs", "flash/main.rs"),
-    ("host_companion/src/flash/lib.rs", "flash/lib.rs"),
+    ("host_tools/src/flash/main.rs", "flash/main.rs"),
+    ("host_tools/src/flash/lib.rs", "flash/lib.rs"),
 ];
 
-pub const FLASH_README: &str = "Flashing the ESP32-S3\n\
+pub const FLASH_README: &str = "Flashing the Vitruvian Deck\n\
 \n\
 This folder holds the three images (bootloader.bin, partitions.bin, firmware.bin)\n\
 and the flasher source in flash/. Build the flasher beside the images and run it:\n\
 \n\
-  rustc --edition 2021 -O flash/main.rs -o flash-esp32-s3\n\
-  ./flash-esp32-s3 [/dev/cu.usbmodemXXXX]\n\
+  rustc --edition 2021 -O flash/main.rs -o flash-vitruvian-deck\n\
+  ./flash-vitruvian-deck [/dev/cu.usbmodemXXXX]\n\
 \n\
 It writes the images with esptool (installed, via uvx, or python3 -m esptool).\n";
 
@@ -193,7 +193,7 @@ pub fn resolve_config(r: &dyn Runner) -> Result<PublishConfig, String> {
     })
 }
 
-/// `jq -r '."apps/embedded/esp32-s3"' <pkg>/.release-please-manifest.json`; like jq under
+/// `jq -r '."apps/embedded/vitruvian-deck"' <pkg>/.release-please-manifest.json`; like jq under
 /// `set -e`, a missing file or key is an error (never a made-up `0.0.0`).
 pub fn read_manifest_version(root: &Path) -> Result<String, String> {
     let path = root.join(PKG).join(".release-please-manifest.json");
@@ -226,7 +226,7 @@ pub fn build_info_json(cfg: &PublishConfig, built_at: &str) -> String {
 
 pub fn beta_notes(cfg: &PublishConfig, built_at: &str) -> String {
     format!(
-        "Latest Beta Firmware Build: {}\nCommit: {}\nBuilt: {}\n\nArtifacts Included:\n* firmware.bin: Application binary (Flash at 0x10000)\n* bootloader.bin: ESP32-S3 second-stage bootloader (Flash at 0x0000)\n* partitions.bin: 16MB partition table (Flash at 0x8000)\n* build_info.json: version / grade / commit stamp\n* esp32-s3-mac-controller.zip: Full flashable archive with the Rust flash helper (flash/).",
+        "Latest Beta Firmware Build: {}\nCommit: {}\nBuilt: {}\n\nArtifacts Included:\n* firmware.bin: Application binary (Flash at 0x10000)\n* bootloader.bin: ESP32-S3 second-stage bootloader (Flash at 0x0000)\n* partitions.bin: 16MB partition table (Flash at 0x8000)\n* build_info.json: version / grade / commit stamp\n* vitruvian-deck.zip: Full flashable archive with the Rust flash helper (flash/).",
         cfg.version, cfg.sha, built_at
     )
 }
@@ -246,10 +246,14 @@ fn work_dir(r: &dyn Runner) -> PathBuf {
                 .duration_since(std::time::UNIX_EPOCH)
                 .map(|d| d.as_nanos())
                 .unwrap_or(0);
-            std::env::temp_dir().join(format!("esp32-s3-publish-{}-{}", std::process::id(), nanos))
+            std::env::temp_dir().join(format!(
+                "vitruvian-deck-publish-{}-{}",
+                std::process::id(),
+                nanos
+            ))
         }
     };
-    base.join("esp32-s3-dist")
+    base.join("vitruvian-deck-dist")
 }
 
 fn make_writable(p: &Path) -> Result<(), String> {
@@ -304,7 +308,7 @@ pub fn publish(cfg: &PublishConfig, r: &dyn Runner) -> Result<(), String> {
     )
     .map_err(|e| format!("write build_info.json: {}", e))?;
 
-    let zip = work.join("esp32-s3-mac-controller.zip");
+    let zip = work.join("vitruvian-deck.zip");
     let mut zip_args = sv(&["-q", zip.to_str().unwrap_or("")]);
     zip_args.extend(sv(&[
         "firmware.bin",
@@ -329,7 +333,7 @@ pub fn publish(cfg: &PublishConfig, r: &dyn Runner) -> Result<(), String> {
                 "--target",
                 &cfg.sha,
                 "--title",
-                "ESP32-S3 Firmware (Beta Rolling Release)",
+                "Vitruvian Deck Firmware (Beta Rolling Release)",
                 "--notes",
                 "Rolling pre-release built automatically from commits landing on main.",
             ]),
@@ -481,14 +485,14 @@ mod tests {
     fn workspace(name: &str) -> PathBuf {
         let root = tmpdir(name);
         let pkg = root.join(PKG);
-        fs::create_dir_all(pkg.join("host_companion/src/flash")).unwrap();
+        fs::create_dir_all(pkg.join("host_tools/src/flash")).unwrap();
         fs::write(
             pkg.join(".release-please-manifest.json"),
-            "{\n  \"apps/embedded/esp32-s3\": \"0.1.12\"\n}\n",
+            "{\n  \"apps/embedded/vitruvian-deck\": \"0.1.12\"\n}\n",
         )
         .unwrap();
-        fs::write(pkg.join("host_companion/src/flash/main.rs"), "// main").unwrap();
-        fs::write(pkg.join("host_companion/src/flash/lib.rs"), "// lib").unwrap();
+        fs::write(pkg.join("host_tools/src/flash/main.rs"), "// main").unwrap();
+        fs::write(pkg.join("host_tools/src/flash/lib.rs"), "// lib").unwrap();
         root
     }
 
@@ -501,7 +505,7 @@ mod tests {
             tag: if beta {
                 BETA_TAG.into()
             } else {
-                "esp32-s3-v2.0.0".into()
+                "vitruvian-deck-v2.0.0".into()
             },
             version: if beta {
                 "0.1.12-beta.abcdef1".into()
@@ -537,7 +541,10 @@ mod tests {
         let root = workspace("prod-cfg");
         let c = resolve_config(&envs(
             &root,
-            &[("GRADE", "production"), ("RELEASE_TAG", "esp32-s3-v3.1.0")],
+            &[
+                ("GRADE", "production"),
+                ("RELEASE_TAG", "vitruvian-deck-v3.1.0"),
+            ],
         ))
         .unwrap();
         assert!(!c.is_beta);
@@ -546,10 +553,13 @@ mod tests {
         assert!(e.contains("refusing to guess"));
         let e = resolve_config(&envs(
             &root,
-            &[("GRADE", "production"), ("RELEASE_TAG", "tabula-v1.0.0")],
+            &[
+                ("GRADE", "production"),
+                ("RELEASE_TAG", "vitruvian-tabs-v1.0.0"),
+            ],
         ))
         .unwrap_err();
-        assert!(e.contains("is not an esp32-s3-v*"));
+        assert!(e.contains("is not an vitruvian-deck-v*"));
         let e = resolve_config(&envs(&root, &[("GRADE", "staging")])).unwrap_err();
         assert!(e.contains("unknown GRADE=staging"));
     }
@@ -564,7 +574,7 @@ mod tests {
         assert!(read_manifest_version(&root).is_err());
         fs::write(
             pkg.join(".release-please-manifest.json"),
-            "{\"apps/embedded/esp32-s3\":\"1.2.3\"}",
+            "{\"apps/embedded/vitruvian-deck\":\"1.2.3\"}",
         )
         .unwrap();
         assert_eq!(read_manifest_version(&root).unwrap(), "1.2.3");
@@ -586,10 +596,10 @@ mod tests {
         assert_eq!(l[0], format!("bazel build //{}:firmware", PKG));
         // zip bundles images + stamp + flash helper (c: the old zip shipped flash.sh)
         let zip = l.iter().find(|x| x.starts_with("zip ")).expect("zip step");
-        assert!(zip.contains("esp32-s3-mac-controller.zip firmware.bin bootloader.bin partitions.bin build_info.json flash/main.rs flash/lib.rs flash/README.txt"), "{}", zip);
+        assert!(zip.contains("vitruvian-deck.zip firmware.bin bootloader.bin partitions.bin build_info.json flash/main.rs flash/lib.rs flash/README.txt"), "{}", zip);
         // release view -> create (release absent)
         assert!(l.contains(&format!("gh release view {}", BETA_TAG)));
-        assert!(l.iter().any(|x| x.starts_with(&format!("gh release create {} --prerelease --target {} --title ESP32-S3 Firmware (Beta Rolling Release) --notes", BETA_TAG, sha))));
+        assert!(l.iter().any(|x| x.starts_with(&format!("gh release create {} --prerelease --target {} --title Vitruvian Deck Firmware (Beta Rolling Release) --notes", BETA_TAG, sha))));
         // five assets uploaded with --clobber
         let up = l
             .iter()
@@ -600,7 +610,7 @@ mod tests {
             "bootloader.bin",
             "partitions.bin",
             "build_info.json",
-            "esp32-s3-mac-controller.zip",
+            "vitruvian-deck.zip",
             "--clobber",
         ] {
             assert!(up.contains(n), "upload missing {}: {}", n, up);
@@ -622,7 +632,7 @@ mod tests {
             .expect("release edit");
         assert!(iu < ip && ip < ie);
         assert!(l[ie].contains("Built: 2026-01-02T03:04:05Z"));
-        assert!(l[ie].contains("esp32-s3-mac-controller.zip"));
+        assert!(l[ie].contains("vitruvian-deck.zip"));
     }
 
     #[test]
@@ -631,7 +641,7 @@ mod tests {
         let tmp = root.join("tmp");
         let f = envs(&root, &[("RUNNER_TEMP", tmp.to_str().unwrap())]);
         publish(&cfg(&root, "beta"), &f).unwrap();
-        let w = tmp.join("esp32-s3-dist");
+        let w = tmp.join("vitruvian-deck-dist");
         for (n, want) in [
             ("firmware.bin", "IMG:firmware"),
             ("bootloader.bin", "IMG:bootloader"),
@@ -670,7 +680,7 @@ mod tests {
         let l = f.lines();
         assert!(l
             .iter()
-            .any(|x| x.starts_with("gh release upload esp32-s3-v2.0.0")));
+            .any(|x| x.starts_with("gh release upload vitruvian-deck-v2.0.0")));
         assert!(!l.iter().any(|x| x.contains("release view")
             || x.contains("release create")
             || x.contains("api -X PATCH")

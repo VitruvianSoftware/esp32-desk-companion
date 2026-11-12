@@ -1,7 +1,7 @@
 # Build Firmware
 
 ## Overview
-Component package providing implementation for `apps/embedded/esp32-s3/host_companion/src/build_firmware`.
+Component package providing implementation for `apps/embedded/vitruvian-deck/host_tools/src/build_firmware`.
 
 ## Interface
 - `[lib.rs:Runner]`
@@ -22,4 +22,4 @@ Component package providing implementation for `apps/embedded/esp32-s3/host_comp
 - None
 
 ## Verification
-- Run: `bazel test //apps/embedded/esp32-s3/host_companion/src/build_firmware/...`
+- Run: `bazel test //apps/embedded/vitruvian-deck/host_tools/src/build_firmware/...`

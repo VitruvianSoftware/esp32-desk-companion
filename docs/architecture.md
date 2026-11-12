@@ -1,6 +1,6 @@
-# mac-controller Architecture & Subsystems
+# Vitruvian Deck Architecture & Subsystems
 
-This document describes the architectural design of the ESP32-S3 Mac Controller, detailing the composite USB OTG stack, graphics rendering pipeline, capacitive touch driver, haptic feedback mechanism, dynamic carousel navigation engine, and host companion architecture.
+This document describes the architectural design of the Vitruvian Deck, detailing the composite USB OTG stack, graphics rendering pipeline, capacitive touch driver, haptic feedback mechanism, dynamic carousel navigation engine, and host helper architecture.
 
 ---
 
@@ -28,7 +28,7 @@ The system operates across two asynchronous domains. They communicate over a USB
                             │   - USB HID Keyboard & Consumer Control
                             │ Channel B: Wi-Fi LAN (untethered)
                             │   - UDP :8266, same newline-framed JSON
-                            │   - mDNS vitruvian-companion.local
+                            │   - mDNS vitruvian-deck.local
 ┌───────────────────────────┼────────────────────────────┐
 │                           ▼                            │
 │  ┌──────────────────────────────────────────────────┐  │
@@ -54,7 +54,7 @@ The system operates across two asynchronous domains. They communicate over a USB
 │  │ - Settings Deck (Tile 3) │──►│ ST7789V2 IPS LCD  │  │
 │  └──────────────────────────┘   │ (SPI + DMA)       │  │
 │                                 └───────────────────┘  │
-│                   ESP32-S3 Firmware                    │
+│                   Deck Firmware                        │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -186,7 +186,7 @@ When any deck toggle switch is altered in the Settings Deck or received via a se
 
 ---
 
-## 7. Host Companion Daemon Architecture
+## 7. Host Helper Daemon Architecture
 
 The host software is a Python daemon (`mac_stats_daemon.py`) structured into modular subsystems:
 
@@ -249,7 +249,7 @@ When Wi-Fi is up and neither channel has carried a host packet for 15 s, the dev
 
 Two paths, both gated on the same device-derived credential (`vitruvian-<last 3 MAC octets>`, overridable and persisted in NVS `ota:pass`):
 
-- **ArduinoOTA** on port 3232 — `pio run -t upload --upload-port vitruvian-companion.local`.
+- **ArduinoOTA** on port 3232 — `pio run -t upload --upload-port vitruvian-deck.local`.
 - **HTTP `/update`** on port 80 — a browser upload form, no toolchain required, behind HTTP Basic auth as user `vitruvian`.
 
 Port 80 is shared with the Wi-Fi provisioning portal, so the two are mutually exclusive: the Settings deck's `[Web Portal]` button calls `ota_manager_stop()` *before* `wifi_manager_start_portal()`, or the portal's bind would silently lose the race. `ota_manager_stop()` also refuses to run mid-flash — tearing the transport out from under a live upload leaves a half-written OTA partition and a bricked boot.

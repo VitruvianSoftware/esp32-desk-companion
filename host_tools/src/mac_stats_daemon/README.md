@@ -1,7 +1,7 @@
 # Mac Stats Daemon
 
 ## Overview
-Component package providing implementation for `apps/embedded/esp32-s3/host_companion/src/mac_stats_daemon`.
+Component package providing implementation for `apps/embedded/vitruvian-deck/host_tools/src/mac_stats_daemon`.
 
 ## Interface
 - `[lib.rs:MDNS_HOSTNAME]`
@@ -33,4 +33,4 @@ Component package providing implementation for `apps/embedded/esp32-s3/host_comp
 - [main.rs:103]: `"http" => {`
 
 ## Verification
-- Run: `bazel test //apps/embedded/esp32-s3/host_companion/src/mac_stats_daemon/...`
+- Run: `bazel test //apps/embedded/vitruvian-deck/host_tools/src/mac_stats_daemon/...`

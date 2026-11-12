@@ -20,7 +20,7 @@
 // SOFTWARE.
 
 //! Rust migration of `test_net_telemetry.py`:
-//! Wireless UDP telemetry (`vitruvian-companion.local:8266`), loopback UDP socket
+//! Wireless UDP telemetry (`vitruvian-deck.local:8266`), loopback UDP socket
 //! verification, transport abstraction parity, USB/Wi-Fi link arbitration, and firmware source checks.
 
 use crate::read_component_file;
@@ -28,7 +28,7 @@ use mac_stats_daemon::DaemonArgs;
 use std::net::UdpSocket;
 use std::time::Duration;
 
-pub const MDNS_HOSTNAME: &str = "vitruvian-companion.local";
+pub const MDNS_HOSTNAME: &str = "vitruvian-deck.local";
 pub const NET_TELEMETRY_PORT: u16 = 8266;
 
 const LINK_NONE: u8 = 0;
@@ -103,7 +103,7 @@ impl LinkModel {
     }
 }
 
-pub fn test_companion_discovery() {
+pub fn test_deck_discovery() {
     let default_args = DaemonArgs::default();
     assert_eq!(default_args.host, MDNS_HOSTNAME);
     assert_eq!(default_args.udp_port, NET_TELEMETRY_PORT);
@@ -124,7 +124,7 @@ pub fn test_companion_discovery() {
     assert_eq!(sleep_cmd, vec!["pmset", "displaysleepnow"]);
 
     let version_h = read_component_file("include/version.h");
-    assert!(version_h.contains("#define MDNS_HOSTNAME     \"vitruvian-companion\""));
+    assert!(version_h.contains("#define MDNS_HOSTNAME     \"vitruvian-deck\""));
     assert!(version_h.contains("#define MDNS_SERVICE      \"vitruvian\""));
     assert!(version_h.contains("#define MDNS_PROTO        \"tcp\""));
     assert!(version_h.contains("#define NET_TELEMETRY_PORT 8266"));
@@ -132,23 +132,23 @@ pub fn test_companion_discovery() {
 
 pub fn test_udp_transport_loopback() {
     let esp_sock = UdpSocket::bind("127.0.0.1:0").expect("bind esp_sock");
-    let companion_sock = UdpSocket::bind("127.0.0.1:0").expect("bind companion_sock");
+    let helper_sock = UdpSocket::bind("127.0.0.1:0").expect("bind helper_sock");
     esp_sock
         .set_read_timeout(Some(Duration::from_secs(2)))
         .unwrap();
-    companion_sock
+    helper_sock
         .set_read_timeout(Some(Duration::from_secs(2)))
         .unwrap();
 
     let esp_addr = esp_sock.local_addr().unwrap();
-    let companion_addr = companion_sock.local_addr().unwrap();
+    let helper_addr = helper_sock.local_addr().unwrap();
 
     let stats_line = "{\"type\":\"stats\",\"cpu\":23,\"ram\":61,\"disk\":48,\"up\":\"4d 2h\"}\n";
     let agent_line = "{\"type\":\"agent_ci\",\"agent_state\":\"CODING\",\"ci_status\":\"PASS\"}\n";
-    companion_sock
+    helper_sock
         .send_to(stats_line.as_bytes(), esp_addr)
         .unwrap();
-    companion_sock
+    helper_sock
         .send_to(agent_line.as_bytes(), esp_addr)
         .unwrap();
 
@@ -164,18 +164,16 @@ pub fn test_udp_transport_loopback() {
     assert!(msg2.contains("\"type\":\"agent_ci\""));
 
     let cmd_line = "{\"type\":\"cmd\",\"action\":\"run_checks\"}\n";
-    esp_sock
-        .send_to(cmd_line.as_bytes(), companion_addr)
-        .unwrap();
-    let (n_cmd, from_addr) = companion_sock.recv_from(&mut buf).unwrap();
+    esp_sock.send_to(cmd_line.as_bytes(), helper_addr).unwrap();
+    let (n_cmd, from_addr) = helper_sock.recv_from(&mut buf).unwrap();
     assert_eq!(from_addr.ip(), esp_addr.ip());
     let cmd_str = std::str::from_utf8(&buf[..n_cmd]).unwrap().trim();
     assert_eq!(cmd_str, "{\"type\":\"cmd\",\"action\":\"run_checks\"}");
 
     let multi =
         "{\"type\":\"cmd\",\"action\":\"refresh\"}\n{\"type\":\"cmd\",\"action\":\"sleep\"}\n";
-    esp_sock.send_to(multi.as_bytes(), companion_addr).unwrap();
-    let (n_multi, _) = companion_sock.recv_from(&mut buf).unwrap();
+    esp_sock.send_to(multi.as_bytes(), helper_addr).unwrap();
+    let (n_multi, _) = helper_sock.recv_from(&mut buf).unwrap();
     let lines: Vec<&str> = std::str::from_utf8(&buf[..n_multi])
         .unwrap()
         .lines()
@@ -306,7 +304,7 @@ pub fn test_firmware_source_invariants() {
 }
 
 pub fn run_suite() -> usize {
-    test_companion_discovery();
+    test_deck_discovery();
     test_udp_transport_loopback();
     test_link_arbitration();
     test_firmware_source_invariants();

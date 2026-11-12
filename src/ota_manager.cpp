@@ -76,7 +76,7 @@ static void ensure_password() {
 static const char UPDATE_HTML[] PROGMEM = R"HTML(<!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Vitruvian Companion OTA</title>
+<title>Vitruvian Deck OTA</title>
 <style>
 body{font-family:-apple-system,Helvetica,Arial,sans-serif;background:#000;color:#fff;
 margin:0 auto;padding:24px;max-width:420px}
@@ -91,7 +91,7 @@ button:disabled{opacity:.5}
 #fill{height:100%;width:0;background:#30d158;transition:width .2s}
 #msg{color:#8e8e93;font-size:13px;margin-top:12px;text-align:center}
 </style></head><body>
-<h1>Vitruvian Companion</h1>
+<h1>Vitruvian Deck</h1>
 <p class="sub">Over-the-air firmware update &mdash; upload <code>firmware.bin</code>.</p>
 <div class="card">
 <form id="f" method="POST" action="/update" enctype="multipart/form-data">

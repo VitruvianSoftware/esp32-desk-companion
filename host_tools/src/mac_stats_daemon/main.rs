@@ -79,7 +79,7 @@ fn main() {
     }
 
     eprintln!(
-        "ESP32-S3 Mac Desktop Companion Daemon starting (mode={}, interval={}s)...",
+        "Vitruvian Deck Mac Helper starting (mode={}, interval={}s)...",
         daemon_args.mode, daemon_args.interval
     );
 

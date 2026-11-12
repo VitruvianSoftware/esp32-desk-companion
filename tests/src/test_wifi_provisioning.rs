@@ -21,7 +21,7 @@
 
 //! Rust migration of `test_wifi_provisioning.py`:
 //! macOS Keychain & CoreWLAN Wi-Fi provisioning, `wifi_set` serialization,
-//! Zero-Typing Companion Sync (`wifi_sync` -> `wifi_set` / `wifi_sync_error`),
+//! Zero-Typing Helper Sync (`wifi_sync` -> `wifi_set` / `wifi_sync_error`),
 //! IEEE 802.11 32-byte SSID / 63-byte WPA2 bounds, and firmware NVS simulation.
 
 use crate::{json_escape_str, json_extract_str};
@@ -263,7 +263,7 @@ pub fn test_ssid_and_payload_serialization() {
     assert!(daemon_pkt.len() < 1024);
 }
 
-pub fn test_zero_typing_companion_sync() {
+pub fn test_zero_typing_helper_sync() {
     let mut actions = Vec::new();
     let resp = handle_incoming_serial_line(
         "{\"type\":\"cmd\",\"action\":\"wifi_sync\"}",
@@ -373,7 +373,7 @@ pub fn test_firmware_nvs_and_80211_bounds() {
 
 pub fn run_suite() -> usize {
     test_ssid_and_payload_serialization();
-    test_zero_typing_companion_sync();
+    test_zero_typing_helper_sync();
     test_firmware_nvs_and_80211_bounds();
     3
 }

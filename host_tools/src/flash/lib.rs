@@ -181,18 +181,18 @@ impl Env {
         }
         // `bazel run`: the images are data of this binary, in its runfiles tree.
         if let Ok(rf) = std::env::var("RUNFILES_DIR") {
-            bundle.push(PathBuf::from(&rf).join("_main/apps/embedded/esp32-s3"));
+            bundle.push(PathBuf::from(&rf).join("_main/apps/embedded/vitruvian-deck"));
         }
         if let Ok(exe) = std::env::current_exe() {
             let mut rf = exe.clone().into_os_string();
             rf.push(".runfiles");
-            bundle.push(PathBuf::from(rf).join("_main/apps/embedded/esp32-s3"));
+            bundle.push(PathBuf::from(rf).join("_main/apps/embedded/vitruvian-deck"));
         }
         if let Ok(cwd) = std::env::current_dir() {
             bundle.push(cwd);
         }
         let project_dir = match std::env::var("BUILD_WORKSPACE_DIRECTORY") {
-            Ok(ws) if !ws.is_empty() => PathBuf::from(ws).join("apps/embedded/esp32-s3"),
+            Ok(ws) if !ws.is_empty() => PathBuf::from(ws).join("apps/embedded/vitruvian-deck"),
             _ => exe_dir.unwrap_or_else(|| PathBuf::from(".")),
         };
         Env {

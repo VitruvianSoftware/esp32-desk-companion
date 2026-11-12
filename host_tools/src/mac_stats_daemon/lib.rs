@@ -24,7 +24,7 @@ use std::net::{ToSocketAddrs, UdpSocket};
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-pub const MDNS_HOSTNAME: &str = "vitruvian-companion.local";
+pub const MDNS_HOSTNAME: &str = "vitruvian-deck.local";
 pub const NET_TELEMETRY_PORT: u16 = 8266;
 pub const WIFI_LIVENESS_TIMEOUT_S: f64 = 20.0;
 
@@ -392,7 +392,7 @@ pub fn serialize_wifi_set_packet(ssid: &str, password: &str) -> Vec<u8> {
     line.into_bytes()
 }
 
-pub fn resolve_companion_host(host: Option<&str>) -> Option<String> {
+pub fn resolve_deck_host(host: Option<&str>) -> Option<String> {
     let target = host
         .map(str::trim)
         .filter(|h| !h.is_empty())
@@ -649,7 +649,7 @@ pub fn usage() -> &'static str {
        --mode <serial|http>  Transport mode (default: serial)\n\
        --port <port>         Serial port (default: auto-detect)\n\
        --baud <rate>         Baud rate (default: 115200)\n\
-       --host <host>         HTTP/UDP target host (default: vitruvian-companion.local)\n\
+       --host <host>         HTTP/UDP target host (default: vitruvian-deck.local)\n\
        --udp-port <port>     UDP target port (default: 8266)\n\
        --interval <sec>      Telemetry interval in seconds (default: 1.0)\n\
        --repo <dir>          Repository directory for CI status (default: .)\n\

@@ -38,7 +38,7 @@ pub fn build_runs_url(repo: &str, branch: &str) -> String {
 
 pub fn build_headers(token: &str) -> BTreeMap<String, String> {
     let mut headers = BTreeMap::new();
-    headers.insert("User-Agent".to_string(), "Vitruvian-ESP32-S3".to_string());
+    headers.insert("User-Agent".to_string(), "Vitruvian-Deck".to_string());
     headers.insert(
         "Accept".to_string(),
         "application/vnd.github+json".to_string(),
@@ -191,7 +191,7 @@ pub fn test_request_and_parsing() {
     );
     let h_anon = build_headers("");
     assert!(!h_anon.contains_key("Authorization"));
-    assert_eq!(h_anon.get("User-Agent").unwrap(), "Vitruvian-ESP32-S3");
+    assert_eq!(h_anon.get("User-Agent").unwrap(), "Vitruvian-Deck");
     assert_eq!(h_anon.get("Accept").unwrap(), "application/vnd.github+json");
     assert_eq!(h_anon.get("X-GitHub-Api-Version").unwrap(), "2022-11-28");
 
@@ -375,6 +375,12 @@ pub fn test_buzzer_firmware_source() {
     assert_ne!(buzz_ch, bl_ch);
 
     assert!(mac_hid_cpp.contains("buzzer_play_click()"));
+
+    // The name the Mac shows for the USB device and for the Bluetooth pairing
+    // entry is the product name (the VID/PID numbers are not part of the name).
+    assert!(mac_hid_cpp.contains("USB.productName(\"Vitruvian Deck\")"));
+    let ble_hid_cpp = read_component_file("src/ble_hid.cpp");
+    assert!(ble_hid_cpp.contains("BLE_DEVICE_NAME = \"Vitruvian Deck\""));
 }
 
 pub fn test_poll_scheduling_and_tls() {

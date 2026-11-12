@@ -1,7 +1,7 @@
 # Src
 
 ## Overview
-Component package providing implementation for `apps/embedded/esp32-s3/src`.
+Component package providing implementation for `apps/embedded/vitruvian-deck/src`.
 
 ## Interface
 - Internal implementation components
@@ -11,7 +11,7 @@ Component package providing implementation for `apps/embedded/esp32-s3/src`.
 
 ## Side Effects
 - [cloud_ci.cpp:201]: `HTTPClient http;`
-- [cloud_ci.cpp:202]: `http.setUserAgent("Vitruvian-ESP32-S3");`
+- [cloud_ci.cpp:202]: `http.setUserAgent("Vitruvian-Deck");`
 - [cloud_ci.cpp:203]: `http.setConnectTimeout(10000);`
 - [cloud_ci.h:32]: `// The HTTPS fetch runs on its own FreeRTOS task -- a TLS handshake blocks for`
 - [main.cpp:326]: `// Wireless radio state machines (portal HTTP serving, station reconnect,`
@@ -22,4 +22,4 @@ Component package providing implementation for `apps/embedded/esp32-s3/src`.
 - [wifi_manager.cpp:39]: `// Base portal window; every HTTP request re-arms it so the user is never cut`
 
 ## Verification
-- Run: `bazel test //apps/embedded/esp32-s3/src/...`
+- Run: `bazel test //apps/embedded/vitruvian-deck/src/...`

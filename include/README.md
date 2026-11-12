@@ -1,7 +1,7 @@
 # Include
 
 ## Overview
-Component package providing implementation for `apps/embedded/esp32-s3/include`.
+Component package providing implementation for `apps/embedded/vitruvian-deck/include`.
 
 ## Interface
 - Internal implementation components
@@ -14,4 +14,4 @@ Component package providing implementation for `apps/embedded/esp32-s3/include`.
 - None
 
 ## Verification
-- Run: `bazel test //apps/embedded/esp32-s3/include/...`
+- Run: `bazel test //apps/embedded/vitruvian-deck/include/...`

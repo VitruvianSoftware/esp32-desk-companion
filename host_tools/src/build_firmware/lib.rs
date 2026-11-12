@@ -18,9 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-//! Rust port of `build_firmware.sh`: compile the ESP32-S3 firmware with PlatformIO
+//! Rust port of `build_firmware.sh`: compile the Vitruvian Deck firmware with PlatformIO
 //! and copy the three flashable images to the paths Bazel asked for. This is the
-//! body of the `//apps/embedded/esp32-s3:firmware` genrule.
+//! body of the `//apps/embedded/vitruvian-deck:firmware` genrule.
 //!
 //! THE GENRULE'S ENVIRONMENT IS NOT YOUR SHELL'S. Bazel hands a `local`-tagged
 //! action only `PATH=/bin:/usr/bin:/usr/local/bin` and `TMPDIR`, and the execroot
@@ -105,7 +105,7 @@ pub struct BuildConfig {
 
 fn default_project_dir(r: &dyn Runner) -> PathBuf {
     match r.var("BUILD_WORKSPACE_DIRECTORY") {
-        Some(ws) if !ws.is_empty() => PathBuf::from(ws).join("apps/embedded/esp32-s3"),
+        Some(ws) if !ws.is_empty() => PathBuf::from(ws).join("apps/embedded/vitruvian-deck"),
         _ => PathBuf::from("."),
     }
 }
@@ -229,7 +229,7 @@ pub fn build_firmware(cfg: &BuildConfig, r: &dyn Runner) -> Result<(), String> {
     let env = build_env(r, &home);
     let pio = find_pio(r, &env)?;
 
-    eprintln!("=== Building ESP32-S3 Firmware ===");
+    eprintln!("=== Building Vitruvian Deck Firmware ===");
     eprintln!("Project directory: {}", cfg.project_dir.display());
     eprintln!(
         "PlatformIO core:   {}",
@@ -363,7 +363,7 @@ mod tests {
         let cfg = parse_args(
             &sv(&[
                 "--project_dir",
-                "apps/embedded/esp32-s3",
+                "apps/embedded/vitruvian-deck",
                 "--out_firmware",
                 "o/firmware.bin",
                 "--out_bootloader",
@@ -374,7 +374,10 @@ mod tests {
             &f,
         )
         .unwrap();
-        assert_eq!(cfg.project_dir, PathBuf::from("apps/embedded/esp32-s3"));
+        assert_eq!(
+            cfg.project_dir,
+            PathBuf::from("apps/embedded/vitruvian-deck")
+        );
         assert_eq!(cfg.out_firmware, "o/firmware.bin");
         assert_eq!(cfg.out_bootloader, "o/bootloader.bin");
         assert_eq!(cfg.out_partitions, "o/partitions.bin");
@@ -394,7 +397,7 @@ mod tests {
         let f = Fake::new(&[("BUILD_WORKSPACE_DIRECTORY", "/ws")]);
         assert_eq!(
             parse_args(&[], &f).unwrap().project_dir,
-            PathBuf::from("/ws/apps/embedded/esp32-s3")
+            PathBuf::from("/ws/apps/embedded/vitruvian-deck")
         );
     }
 
